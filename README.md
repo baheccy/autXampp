@@ -1,7 +1,7 @@
 # autXampp
 Sistema personal de "automatizacion" de xampp
 
-##Requerimientos:
+## Requerimientos:
 Ingresar el proyecto en ~/Desktop
 instalar pyinstaller:
 ```shell
