@@ -54,7 +54,7 @@ def main():
     w_op = True
     D_pathEnd = "/opt/lampp/htdocs"
 
-    ms_outRes = ("\n1.-Iniciar sistema grafico\n2.-Agregar proyecto\n3.-Instalar xampp\n4.-Iniciar servidor xampp\n5.-Parar servidor xampp\n6.-limpiar consola\n0.-cerrar")
+    ms_outRes = ("\n1.-Iniciar sistema grafico\n2.-Agregar proyecto\n3.-Instalar xampp\n4.-Iniciar servidor xampp\n5.-Parar servidor xampp\n6.-limpiar consola\n7.-Desinstalar xampp\n8.-Seguridad\n0.-cerrar")
     ms_outPathStart = "Ingresa la ruta de la carpeta que deseas agregar..."
     ms_outPathEnd = "Quieres ingresarlo a Htdocs Xampp?"
 
@@ -112,6 +112,21 @@ def main():
                         system("sudo /opt/lampp/lampp stop")
                 elif __op == 6:
                     clear()
+                elif __op == 3:
+                    system("sudo chmod +x ./xampp-linux-x64-8.2.12-0-installer.run")
+                    system("sudo ./xampp-linux-x64-8.2.12-0-installer.run")
+                elif __op == 7:
+                    desinstalar = input("Esta seguro de desinstalar?"+ms_res)
+                    if(desinstalar == "s" or desinstalar == "S" or desinstalar == "y" or desinstalar == "Y"):
+                        system("sudo /opt/lampp/./uninstall")
+                    else:
+                        clear()
+                elif __op == 8:
+                    seguro = input("Esta seguro de desinstalar?"+ms_res)
+                    if(seguro == "s" or seguro == "S" or seguro == "y" or seguro == "Y"):
+                        system("sudo /opt/lampp/lampp security")
+                    else:
+                        clear()
                 else:
                     clear()
                     print(ms_err1)
