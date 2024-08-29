@@ -2,6 +2,38 @@ from os import system
 from os.path import isdir, expanduser
 import subprocess
 
+# Variables descriptivas para los mensajes de salida
+MSG_MAIN_MENU = (
+    "\n1.- Iniciar sistema gráfico\n"
+    "2.- Agregar proyecto\n"
+    "3.- Instalar Xampp\n"
+    "4.- Iniciar servidor Xampp\n"
+    "5.- Parar servidor Xampp\n"
+    "6.- Limpiar consola\n"
+    "7.- Desinstalar Xampp\n"
+    "8.- Seguridad\n"
+    "0.- Cerrar"
+)
+PROMPT_PATH_START = "Ingresa la ruta de la carpeta que deseas agregar..."
+PROMPT_PATH_END = "¿Quieres ingresarlo a Htdocs Xampp? [S/n]:: "
+PROMPT_DEST_PATH = "Ingresa la ruta de destino..."
+PROMPT_USER = "\nROOT::USER~>| "
+MSG_ERROR_TOO_MANY_ATTEMPTS = "Demasiados intentos erróneos, favor de ingresar los datos correctos"
+MSG_ERROR_INVALID_INPUT = "Favor de ingresar valores válidos"
+MSG_PROGRAM_ENDED = "Programa finalizado"
+MSG_COPY_SUCCESS = "Se ha copiado correctamente"
+MSG_CONFIRM_UNINSTALL = "¿Está seguro de desinstalar? [S/n]:: "
+MSG_CONFIRM_SECURITY = "¿Está seguro de realizar cambios en la seguridad? [S/n]:: "
+
+# Rutas del sistema
+XAMPP_MANAGER_PATH = "/opt/lampp/./manager-linux-x64.run"
+XAMPP_START_PATH = "/opt/lampp/lampp start"
+XAMPP_STOP_PATH = "/opt/lampp/lampp stop"
+XAMPP_UNINSTALL_PATH = "/opt/lampp/./uninstall"
+XAMPP_SECURITY_PATH = "/opt/lampp/lampp security"
+XAMPP_INSTALLER_PATH = "~/Desktop/autXampp/xampp/./xampp-linux-x64-8.2.12-0-installer.run"
+XAMPP_HTDOCS_PATH = "/opt/lampp/htdocs"
+
 def func_containsKW(param):
     caracteres_validos = (
         "abcdefghijklmnopqrstuvwxyz"
@@ -9,19 +41,13 @@ def func_containsKW(param):
         "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
     )
     validos_set = set(caracteres_validos)
-    for char in param:
-        if char in validos_set:
-            return True
-    return False
+    return any(char in validos_set for char in param)
 
 def func_containsNum(param):
-    for char in param:
-        if char.isdigit():
-            return True
-    return False
+    return any(char.isdigit() for char in param)
 
 def clear():
-    system("clear")
+    system("sudo clear")
 
 def func_cpToPath(pathStart, pathEnd):
     # Nota: `sudo` puede requerir la contraseña del usuario
@@ -30,7 +56,7 @@ def func_cpToPath(pathStart, pathEnd):
 
 def func_get_valid_path(prompt):
     while True:
-        path = input(prompt)
+        path = input(prompt + PROMPT_USER)
         path = expanduser(path)  # Expande ~ a la ruta del usuario
         if isdir(path):  # Verifica si la ruta es un directorio válido
             return path
@@ -39,100 +65,89 @@ def func_get_valid_path(prompt):
 
 def func_QuestXampp_Run():
     try:
-        result = subprocess.run(['ps','aux'],stdout=subprocess.PIPE,text=True)
+        result = subprocess.run(['ps', 'aux'], stdout=subprocess.PIPE, text=True)
         output = result.stdout
         apache_running = 'httpd' in output or 'apache2' in output
         mysql_running = 'mysql' in output
         return apache_running and mysql_running
-    
     except Exception as e:
-        print(f"Error al verificar el estado de Xampp:{e}")
+        print(f"Error al verificar el estado de Xampp: {e}")
         return False
 
 def main():
     clear()
     w_op = True
-    D_pathEnd = "/opt/lampp/htdocs"
+    D_pathEnd = XAMPP_HTDOCS_PATH
 
-    ms_outRes = ("\n1.-Iniciar sistema grafico\n2.-Agregar proyecto\n3.-Instalar xampp\n4.-Iniciar servidor xampp\n5.-Parar servidor xampp\n6.-limpiar consola\n7.-Desinstalar xampp\n8.-Seguridad\n0.-cerrar")
-    ms_outPathStart = "Ingresa la ruta de la carpeta que deseas agregar..."
-    ms_outPathEnd = "Quieres ingresarlo a Htdocs Xampp?"
-
-    ms_res = "\nROOT::USER~>| "
-
-    consoleRun__xampp = "sudo /opt/lampp/manager-linux-x64.run"
-
-    ms_err = "Demasiados intentos erróneos, favor de ingresar los datos correctos"
-    ms_err1 = "Favor de ingresar valores válidos"
-
-    ms_end = "Programa finalizado"
-    i = 0
+    attempt_count = 0
+    max_attempts = 3
     while w_op:
-        if i >= 3:
+        if attempt_count >= max_attempts:
             clear()
-            print(ms_err)
+            print(MSG_ERROR_TOO_MANY_ATTEMPTS)
             break
         
-        __op = input(ms_outRes + ms_res)
+        __op = input(MSG_MAIN_MENU + PROMPT_USER)
         
         if func_containsKW(__op):
             clear()
-            i += 1
-            print(ms_err1)
+            attempt_count += 1
+            print(MSG_ERROR_INVALID_INPUT)
         else:
-            i = 0
+            attempt_count = 0
             if func_containsNum(__op):
                 __op = int(__op)
                 if __op == 0:
                     clear()
                     if func_QuestXampp_Run():
-                        system("sudo /opt/lampp/lampp stop")
-                    print(ms_end)
+                        system(f"sudo {XAMPP_STOP_PATH}")
+                    print(MSG_PROGRAM_ENDED)
                     break
                 elif __op == 1:
                     clear()
-                    system(consoleRun__xampp)
+                    system(f"sudo {XAMPP_MANAGER_PATH}")
                 elif __op == 2:
                     clear()
-                    __pathStart = func_get_valid_path(ms_outPathStart + ms_res)
+                    __pathStart = func_get_valid_path(PROMPT_PATH_START)
                     
-                    __pathEnd = input(ms_outPathEnd + ms_res + "[S/n]:: ")
+                    __pathEnd = input(PROMPT_PATH_END)
                     if __pathEnd.lower() == "n":
-                        __pathEnd = func_get_valid_path("Ingresa la ruta de destino..." + ms_res)
+                        __pathEnd = func_get_valid_path(PROMPT_DEST_PATH)
                         func_cpToPath(__pathStart, __pathEnd)
                     else:
                         func_cpToPath(__pathStart, D_pathEnd)
-                        print("Se ha copiado correctamente")
+                        print(MSG_COPY_SUCCESS)
                 elif __op == 4:
                     clear()
-                    system("sudo /opt/lampp/lampp start")
+                    system(f"sudo {XAMPP_START_PATH}")
                 elif __op == 5:
                     clear()
                     if func_QuestXampp_Run():
-                        system("sudo /opt/lampp/lampp stop")
+                        system(f"sudo {XAMPP_STOP_PATH}")
                 elif __op == 6:
                     clear()
                 elif __op == 3:
-                    system("sudo chmod +x ./xampp-linux-x64-8.2.12-0-installer.run")
-                    system("sudo ./xampp-linux-x64-8.2.12-0-installer.run")
+                    system(f"sudo chmod +x {XAMPP_INSTALLER_PATH}")
+                    system(f"sudo {XAMPP_INSTALLER_PATH}")
                 elif __op == 7:
-                    desinstalar = input("Esta seguro de desinstalar?"+ms_res)
-                    if(desinstalar == "s" or desinstalar == "S" or desinstalar == "y" or desinstalar == "Y"):
-                        system("sudo /opt/lampp/./uninstall")
+                    desinstalar = input(MSG_CONFIRM_UNINSTALL)
+                    if desinstalar.lower() in ("s", "y"):
+                        system(f"sudo {XAMPP_UNINSTALL_PATH}")
                     else:
                         clear()
                 elif __op == 8:
-                    seguro = input("Esta seguro de desinstalar?"+ms_res)
-                    if(seguro == "s" or seguro == "S" or seguro == "y" or seguro == "Y"):
-                        system("sudo /opt/lampp/lampp security")
+                    seguro = input(MSG_CONFIRM_SECURITY)
+                    if seguro.lower() in ("s", "y"):
+                        system(f"sudo {XAMPP_SECURITY_PATH}")
                     else:
                         clear()
                 else:
                     clear()
-                    print(ms_err1)
+                    print(MSG_ERROR_INVALID_INPUT)
             else:
                 clear()
-                print(ms_err1)
+                print(MSG_ERROR_INVALID_INPUT)
 
 if __name__ == "__main__":
     main()
+    
