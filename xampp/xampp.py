@@ -1,6 +1,8 @@
 from os import system
 from os.path import isdir, expanduser
 import subprocess
+from time import sleep
+import json
 
 # Variables descriptivas para los mensajes de salida
 MSG_MAIN_MENU = (
@@ -12,6 +14,7 @@ MSG_MAIN_MENU = (
     "6.- Limpiar consola\n"
     "7.- Desinstalar Xampp\n"
     "8.- Seguridad\n"
+    "9.- Rutas de proyectos\n"
     "0.- Cerrar"
 )
 PROMPT_PATH_START = "Ingresa la ruta de la carpeta que deseas agregar..."
@@ -22,9 +25,13 @@ MSG_ERROR_TOO_MANY_ATTEMPTS = "Demasiados intentos erróneos, favor de ingresar 
 MSG_ERROR_INVALID_INPUT = "Favor de ingresar valores válidos"
 MSG_PROGRAM_ENDED = "Programa finalizado"
 MSG_COPY_SUCCESS = "Se ha copiado correctamente"
-MSG_CONFIRM_UNINSTALL = "¿Está seguro de desinstalar? [S/n]:: "
-MSG_CONFIRM_SECURITY = "¿Está seguro de realizar cambios en la seguridad? [S/n]:: "
-
+MSG_CONFIRM_UNINSTALL = "¿Está seguro de desinstalar? [s/N]:: "
+MSG_CONFIRM_SECURITY = "¿Está seguro de realizar cambios en la seguridad? [s/N]:: "
+MSG_RUTASDES = "Que quieres hacer?\n\n1.-Agregar una nueva ruta\n2.-Eliminar una ruta\n3.-Modificar una ruta\n4.-Borrar todas las rutas\n5.-Agregar una cantidad de rutas\n6.-Ver las rutas\n0.-Cerrar opciones"
+MSG_INRUN = "El programa ya fue iniciado"
+MSG_NORUN = "El programa no ha sido iniciado"
+MSG_ERROR_OPTION_PATH = "Ingresa una opcion valida en la opcion '9'"
+MSG_CLOSE_OPTION_PATH = "Cerrando operaciones de rutas..."
 # Rutas del sistema
 XAMPP_MANAGER_PATH = "/opt/lampp/./manager-linux-x64.run"
 XAMPP_START_PATH = "/opt/lampp/lampp start"
@@ -33,6 +40,7 @@ XAMPP_UNINSTALL_PATH = "/opt/lampp/./uninstall"
 XAMPP_SECURITY_PATH = "/opt/lampp/lampp security"
 XAMPP_INSTALLER_PATH = "~/Desktop/autXampp/xampp/./xampp-linux-x64-8.2.12-0-installer.run"
 XAMPP_HTDOCS_PATH = "/opt/lampp/htdocs"
+DATA_JSONFILES = "~/Desktop/autXampp/xampp/data/paths.json"
 
 def func_containsKW(param):
     caracteres_validos = (
@@ -70,12 +78,81 @@ def func_QuestXampp_Run():
         apache_running = 'httpd' in output or 'apache2' in output
         mysql_running = 'mysql' in output
         return apache_running and mysql_running
+    
     except Exception as e:
         print(f"Error al verificar el estado de Xampp: {e}")
         return False
 
+def func_ReadPath__FILE(param):
+    """
+    Debe de poder leer un archivo json y que devuelva su contenido en un diccionario
+    :param param: Ruta del archivo json
+    :return: contenido del json como un diccionario
+    """
+    try:
+        param = expanduser(param)  # Expande ~ a la ruta del usuario
+        with open(param, 'r') as archivo:
+            contenido = json.load(archivo)
+        return contenido
+        
+    except FileNotFoundError:
+        print(f"El archivo {param} no se encuentra")
+        return None
+    
+    except json.JSONDecodeError:
+        print("Error al decodificar el archivo json")
+        return None
+    
+    except Exception as error:
+        print(f"Ocurrio un error: {error}")
+        return None
+
+def func_addPath(name,path,param):
+    param = expanduser(param)
+    try:
+        with open(param,'r') as file:
+            data = json.load(file)        
+        data[name]=path
+        
+        with open(param, 'w') as file:
+            json.dump(data,file,indent=4)
+        print(f"Directorio '{name}' agregado exitosamente")
+    
+    except FileNotFoundError:
+        print(f"El archivo '{param}' no se encontró.")
+    
+    except json.JSONDecodeError:
+        print(f"Error al leer el archivo '{param}'. Asegúrate de que esté en formato JSON válido.")
+    
+    except Exception as e:
+        print(f"Ocurrió un error: {e}")
+
+def func_delPath(name,pathParam):
+    pathParam = expanduser(pathParam)
+    try:
+        with open(pathParam,'r') as file:
+            data = json.load(file)
+        if name in data:#? Busca si el valor existe en el diccionario
+            del data[name]#? Elimina el directorio del diccionario
+            #* Escribir los cambios devuelta al archivo
+            with open(pathParam,'w') as file:
+                json.dump(data,file,indent=4)
+            print(f"Directorio '{name}' borrado exitosamente")
+        else:
+            print(f"El directorio '{name}' no se encontro en el archivo")
+    except FileNotFoundError:
+        print(f"El archivo '{pathParam}' no se encontró")
+    
+    except json.JSONDecodeError:
+        print(f"Error al leer el archivo '{pathParam}'. Asegúrate de que esté en formato JSON válido")
+    
+    except Exception as e:
+        print(f"Ocurrió un error: {e}")
+
 def main():
     clear()
+    __PATHINTOJSON = func_ReadPath__FILE(DATA_JSONFILES)
+    sleep(0.5)
     w_op = True
     D_pathEnd = XAMPP_HTDOCS_PATH
 
@@ -119,11 +196,20 @@ def main():
                         print(MSG_COPY_SUCCESS)
                 elif __op == 4:
                     clear()
-                    system(f"sudo {XAMPP_START_PATH}")
+                    if func_QuestXampp_Run():
+                        clear()
+                        print(MSG_INRUN)
+                        sleep(0.5)
+                    else:
+                        system(f"sudo {XAMPP_START_PATH}")
                 elif __op == 5:
                     clear()
                     if func_QuestXampp_Run():
                         system(f"sudo {XAMPP_STOP_PATH}")
+                    else:
+                        clear()
+                        print(MSG_NORUN)
+                        sleep(0.5)
                 elif __op == 6:
                     clear()
                 elif __op == 3:
@@ -141,6 +227,39 @@ def main():
                         system(f"sudo {XAMPP_SECURITY_PATH}")
                     else:
                         clear()
+                elif __op == 9:
+                    clear()
+                    rutasDes = input(MSG_RUTASDES + PROMPT_USER)
+                    if func_containsKW(rutasDes):
+                        print(MSG_ERROR_OPTION_PATH)
+                    elif func_containsNum(rutasDes):
+                        clear()
+                        rutasDes = int(rutasDes)
+                        if rutasDes == 0:
+                            clear()
+                            print(MSG_CLOSE_OPTION_PATH)
+                            sleep(0.5)
+                        elif rutasDes == 6:
+                            if __PATHINTOJSON is not None:
+                                for clave, valor in __PATHINTOJSON.items():
+                                    clear()
+                                    print(f"{clave}: {valor}")
+                            else:
+                                print("No se pudo leer el valor del archivo json")
+                        elif rutasDes == 1:
+                            clear()
+                            modName = input("Ingresa el nombre de la ruta:"+PROMPT_USER)
+                            modPath = input("Ingresa la ruta"+PROMPT_USER)
+                            func_addPath(modName,modPath,param=DATA_JSONFILES)
+                        elif rutasDes == 2:
+                            if __PATHINTOJSON is not None:
+                                for clave, valor in __PATHINTOJSON.items():
+                                    clear()
+                                    print(f"\nNombre:{clave} = {valor}")
+                            else:
+                                print("No se pudo leer el valor del archivo json")
+                            delName = input(f"Ingresa el nombre de la ruta que desea eliminar\n{PROMPT_USER}")
+                            func_delPath(delName,pathParam=DATA_JSONFILES)
                 else:
                     clear()
                     print(MSG_ERROR_INVALID_INPUT)
@@ -150,4 +269,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
