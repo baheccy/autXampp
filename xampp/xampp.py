@@ -5,14 +5,14 @@ from time import sleep
 import json
 
 # Variables descriptivas para los mensajes de salida
-MSG_MAIN_MENU = (
-    "\n1.- Iniciar sistema gráfico\n"
-    "2.- Agregar proyecto\n"
-    "3.- Instalar Xampp\n"
-    "4.- Iniciar servidor Xampp\n"
-    "5.- Parar servidor Xampp\n"
-    "6.- Limpiar consola\n"
-    "7.- Desinstalar Xampp\n"
+MSG_MAIN_MENU = ("\n"
+    "1.- Iniciar servidor Xampp\n"
+    "2.- Parar servidor Xampp\n"
+    "3.- Agregar proyecto\n"
+    "4.- Iniciar sistema gráfico\n"
+    "5.- Instalar Xampp\n"
+    "6.- Desinstalar Xampp\n"
+    "7.- Limpiar consola\n"
     "8.- Seguridad\n"
     "9.- Rutas de proyectos\n"
     "0.- Cerrar"
@@ -27,7 +27,15 @@ MSG_PROGRAM_ENDED = "Programa finalizado"
 MSG_COPY_SUCCESS = "Se ha copiado correctamente"
 MSG_CONFIRM_UNINSTALL = "¿Está seguro de desinstalar? [s/N]:: "
 MSG_CONFIRM_SECURITY = "¿Está seguro de realizar cambios en la seguridad? [s/N]:: "
-MSG_RUTASDES = "Que quieres hacer?\n\n1.-Agregar una nueva ruta\n2.-Eliminar una ruta\n3.-Modificar una ruta\n4.-Borrar todas las rutas\n5.-Agregar una cantidad de rutas\n6.-Ver las rutas\n0.-Cerrar opciones"
+MSG_RUTASDES = ("Que quieres hacer?\n"
+                "\n1.-Agregar una nueva ruta"
+                "\n2.-Eliminar una ruta"
+                "\n3.-Modificar una ruta"
+                "\n4.-Borrar todas las rutas"
+                "\n5.-Agregar una cantidad de rutas"
+                "\n6.-Ver las rutas"
+                "\n0.-Cerrar opciones"
+                )
 MSG_INRUN = "El programa ya fue iniciado"
 MSG_NORUN = "El programa no ha sido iniciado"
 MSG_ERROR_OPTION_PATH = "Ingresa una opcion valida en la opcion '9'"
@@ -174,11 +182,30 @@ def __main_opt__0():
     if func_QuestXampp_Run():
         system(f"sudo {XAMPP_STOP_PATH}")
     print(MSG_PROGRAM_ENDED)
-def __main_opt__1():
+def __main_opt__1():#? Iniciar servidor
     clear()
-    system(f"sudo {XAMPP_MANAGER_PATH}")
-def __main_opt__2(D_pathEnd):
+    if func_QuestXampp_Run():
+        clear()
+        print(MSG_INRUN)
+        sleep(0.5)
+    else:
+        system(f"sudo {XAMPP_START_PATH}")
+
+def __main_opt__2():#? Finalizar servidor
     clear()
+    if func_QuestXampp_Run():
+        system(f"sudo {XAMPP_STOP_PATH}")
+    else:
+        clear()
+        print(MSG_NORUN)
+        sleep(0.5)
+def __main_opt__3(D_pathEnd):#? Agregar proyecto
+    clear()
+    __optAP = input()
+    if func_containsKW(__optAP):
+        print()
+    elif func_containsNum(__optAP):
+        print()
     __pathStart = func_get_valid_path(PROMPT_PATH_START)
     
     __pathEnd = input(PROMPT_PATH_END)
@@ -189,29 +216,16 @@ def __main_opt__2(D_pathEnd):
         func_cpToPath(__pathStart, D_pathEnd)
         print(MSG_COPY_SUCCESS)
 
-def __main_opt__3():
+def __main_opt__4():#? Iniciar sistema grafico
+    clear()
+    system(f"sudo {XAMPP_MANAGER_PATH}")
+
+def __main_opt__5():#? Instalar xampp
     system(f"sudo chmod +x {XAMPP_INSTALLER_PATH}")
     system(f"sudo {XAMPP_INSTALLER_PATH}")
 
-def __main_opt__4():
-    clear()
-    if func_QuestXampp_Run():
-        clear()
-        print(MSG_INRUN)
-        sleep(0.5)
-    else:
-        system(f"sudo {XAMPP_START_PATH}")
 
-def __main_opt__5():
-    clear()
-    if func_QuestXampp_Run():
-        system(f"sudo {XAMPP_STOP_PATH}")
-    else:
-        clear()
-        print(MSG_NORUN)
-        sleep(0.5)
-
-def __main_opt__7():
+def __main_opt__6():
     desinstalar = input(MSG_CONFIRM_UNINSTALL)
     if desinstalar.lower() in ("s", "y"):
         system(f"sudo {XAMPP_UNINSTALL_PATH}")
@@ -314,23 +328,23 @@ def main():
                 if __op == 0:
                     __main_opt__0()
                     break
-                elif __op == 1:
-                    __main_opt__1(D_pathEnd=D_pathEnd)
-                elif __op == 2:
+                elif __op == 1:#? Iniciar servidor
+                    __main_opt__1()
+                elif __op == 2:#? Finalizar servidor
                     __main_opt__2()
-                elif __op == 3:
-                    __main_opt__3()
-                elif __op == 4:
+                elif __op == 3:#? Agregar proyecto
+                    __main_opt__3(D_pathEnd=D_pathEnd)
+                elif __op == 4:#? Iniciar sistema grafico
                     __main_opt__4()
-                elif __op == 5:
+                elif __op == 5:#? Instalar xampp
                     __main_opt__5()
-                elif __op == 6:
-                    clear()
+                elif __op == 6:#? Desinstalar xampp
+                    __main_opt__6()
                 elif __op == 7:
-                    __main_opt__7()
-                elif __op == 8:
+                    clear()
+                elif __op == 8:#? Seguridad
                     __main_opt__8()
-                elif __op == 9:
+                elif __op == 9:#? Rutas de proyectos
                     __main_opt__9(__PATHINTOJSON=__PATHINTOJSON)
                 else:
                     clear()
