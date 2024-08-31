@@ -55,7 +55,7 @@ def func_containsNum(param):
     return any(char.isdigit() for char in param)
 
 def clear():
-    system("sudo clear")
+    system("clear")
 
 def func_cpToPath(pathStart, pathEnd):
     # Nota: `sudo` puede requerir la contraseña del usuario
@@ -148,6 +148,143 @@ def func_delPath(name,pathParam):
     
     except Exception as e:
         print(f"Ocurrió un error: {e}")
+def func_modPath(name, newPath, pathParam):
+    pathParam = expanduser(pathParam)
+    try:
+        with open(pathParam, 'r') as file:
+            data = json.load(file)
+        if name in data:
+            data[name] = newPath
+            with open(pathParam, 'w') as file:
+                json.dump(data, file, indent=4)
+            print(f"Directorio '{name}' modificado exitosamente")
+        else:
+            print(f"El directorio '{name}' no se encontró en el archivo")
+    except FileNotFoundError:
+        print(f"El archivo '{pathParam}' no se encontró")
+    
+    except json.JSONDecodeError:
+        print(f"Error al leer el archivo '{pathParam}'. Asegúrate de que esté en formato JSON válido")
+    
+    except Exception as e:
+        print(f"Ocurrió un error: {e}")
+
+def __main_opt__0():
+    clear()
+    if func_QuestXampp_Run():
+        system(f"sudo {XAMPP_STOP_PATH}")
+    print(MSG_PROGRAM_ENDED)
+def __main_opt__1():
+    clear()
+    system(f"sudo {XAMPP_MANAGER_PATH}")
+def __main_opt__2(D_pathEnd):
+    clear()
+    __pathStart = func_get_valid_path(PROMPT_PATH_START)
+    
+    __pathEnd = input(PROMPT_PATH_END)
+    if __pathEnd.lower() == "n":
+        __pathEnd = func_get_valid_path(PROMPT_DEST_PATH)
+        func_cpToPath(__pathStart, __pathEnd)
+    else:
+        func_cpToPath(__pathStart, D_pathEnd)
+        print(MSG_COPY_SUCCESS)
+
+def __main_opt__3():
+    system(f"sudo chmod +x {XAMPP_INSTALLER_PATH}")
+    system(f"sudo {XAMPP_INSTALLER_PATH}")
+
+def __main_opt__4():
+    clear()
+    if func_QuestXampp_Run():
+        clear()
+        print(MSG_INRUN)
+        sleep(0.5)
+    else:
+        system(f"sudo {XAMPP_START_PATH}")
+
+def __main_opt__5():
+    clear()
+    if func_QuestXampp_Run():
+        system(f"sudo {XAMPP_STOP_PATH}")
+    else:
+        clear()
+        print(MSG_NORUN)
+        sleep(0.5)
+
+def __main_opt__7():
+    desinstalar = input(MSG_CONFIRM_UNINSTALL)
+    if desinstalar.lower() in ("s", "y"):
+        system(f"sudo {XAMPP_UNINSTALL_PATH}")
+    else:
+        clear()
+
+def __main_opt__8():
+    seguro = input(MSG_CONFIRM_SECURITY)
+    if seguro.lower() in ("s", "y"):
+        system(f"sudo {XAMPP_SECURITY_PATH}")
+    else:
+        clear()
+
+def __main_opt__9_0():
+    clear()
+    print(MSG_CLOSE_OPTION_PATH)
+    sleep(0.5)
+
+def __main_opt__9_1():
+    clear()
+    modName = input("Ingresa el nombre de la ruta:"+PROMPT_USER)
+    modPath = input("Ingresa la ruta"+PROMPT_USER)
+    func_addPath(modName,modPath,param=DATA_JSONFILES)
+
+def __main_opt__9_2(__PATHINTOJSON):
+    if __PATHINTOJSON is not None:
+        for clave, valor in __PATHINTOJSON.items():
+            clear()
+            print(f"\nNombre:{clave} = {valor}")
+    else:
+        print("No se pudo leer el valor del archivo json")
+    delName = input(f"Ingresa el nombre de la ruta que desea eliminar\n{PROMPT_USER}")
+    func_delPath(delName,pathParam=DATA_JSONFILES)
+
+def __main_opt__9_3(__PATHINTOJSON):
+    clear()
+    if __PATHINTOJSON is not None:
+        for clave, valor in __PATHINTOJSON.items():
+            print(f"\nNombre: {clave} = {valor}")
+    else:
+        print("No se pudo leer el valor del archivo JSON")
+    
+    modName = input("Ingresa el nombre de la ruta que deseas modificar" + PROMPT_USER)
+    modPath = input("Ingresa la nueva ruta" + PROMPT_USER)
+    func_modPath(modName, modPath, pathParam=DATA_JSONFILES)
+
+def __main_opt__9_6(__PATHINTOJSON):
+    if __PATHINTOJSON is not None:
+        for clave, valor in __PATHINTOJSON.items():
+            clear()
+            print(f"{clave}: {valor}")
+    else:
+        print("No se pudo leer el valor del archivo json")
+
+def __main_opt__9(__PATHINTOJSON):
+    clear()
+    rutasDes = input(MSG_RUTASDES + PROMPT_USER)
+    if func_containsKW(rutasDes):
+        print(MSG_ERROR_OPTION_PATH)
+    elif func_containsNum(rutasDes):
+        clear()
+        rutasDes = int(rutasDes)
+        if rutasDes == 0:
+            
+            __main_opt__9_0()
+        elif rutasDes == 1:
+            __main_opt__9_1()
+        elif rutasDes == 2:
+            __main_opt__9_2(__PATHINTOJSON)
+        elif rutasDes == 3:
+            __main_opt__9_3(__PATHINTOJSON)
+        elif rutasDes == 6:
+            __main_opt__9_6(__PATHINTOJSON)
 
 def main():
     clear()
@@ -175,91 +312,26 @@ def main():
             if func_containsNum(__op):
                 __op = int(__op)
                 if __op == 0:
-                    clear()
-                    if func_QuestXampp_Run():
-                        system(f"sudo {XAMPP_STOP_PATH}")
-                    print(MSG_PROGRAM_ENDED)
+                    __main_opt__0()
                     break
                 elif __op == 1:
-                    clear()
-                    system(f"sudo {XAMPP_MANAGER_PATH}")
+                    __main_opt__1(D_pathEnd=D_pathEnd)
                 elif __op == 2:
-                    clear()
-                    __pathStart = func_get_valid_path(PROMPT_PATH_START)
-                    
-                    __pathEnd = input(PROMPT_PATH_END)
-                    if __pathEnd.lower() == "n":
-                        __pathEnd = func_get_valid_path(PROMPT_DEST_PATH)
-                        func_cpToPath(__pathStart, __pathEnd)
-                    else:
-                        func_cpToPath(__pathStart, D_pathEnd)
-                        print(MSG_COPY_SUCCESS)
+                    __main_opt__2()
+                elif __op == 3:
+                    __main_opt__3()
                 elif __op == 4:
-                    clear()
-                    if func_QuestXampp_Run():
-                        clear()
-                        print(MSG_INRUN)
-                        sleep(0.5)
-                    else:
-                        system(f"sudo {XAMPP_START_PATH}")
+                    __main_opt__4()
                 elif __op == 5:
-                    clear()
-                    if func_QuestXampp_Run():
-                        system(f"sudo {XAMPP_STOP_PATH}")
-                    else:
-                        clear()
-                        print(MSG_NORUN)
-                        sleep(0.5)
+                    __main_opt__5()
                 elif __op == 6:
                     clear()
-                elif __op == 3:
-                    system(f"sudo chmod +x {XAMPP_INSTALLER_PATH}")
-                    system(f"sudo {XAMPP_INSTALLER_PATH}")
                 elif __op == 7:
-                    desinstalar = input(MSG_CONFIRM_UNINSTALL)
-                    if desinstalar.lower() in ("s", "y"):
-                        system(f"sudo {XAMPP_UNINSTALL_PATH}")
-                    else:
-                        clear()
+                    __main_opt__7()
                 elif __op == 8:
-                    seguro = input(MSG_CONFIRM_SECURITY)
-                    if seguro.lower() in ("s", "y"):
-                        system(f"sudo {XAMPP_SECURITY_PATH}")
-                    else:
-                        clear()
+                    __main_opt__8()
                 elif __op == 9:
-                    clear()
-                    rutasDes = input(MSG_RUTASDES + PROMPT_USER)
-                    if func_containsKW(rutasDes):
-                        print(MSG_ERROR_OPTION_PATH)
-                    elif func_containsNum(rutasDes):
-                        clear()
-                        rutasDes = int(rutasDes)
-                        if rutasDes == 0:
-                            clear()
-                            print(MSG_CLOSE_OPTION_PATH)
-                            sleep(0.5)
-                        elif rutasDes == 6:
-                            if __PATHINTOJSON is not None:
-                                for clave, valor in __PATHINTOJSON.items():
-                                    clear()
-                                    print(f"{clave}: {valor}")
-                            else:
-                                print("No se pudo leer el valor del archivo json")
-                        elif rutasDes == 1:
-                            clear()
-                            modName = input("Ingresa el nombre de la ruta:"+PROMPT_USER)
-                            modPath = input("Ingresa la ruta"+PROMPT_USER)
-                            func_addPath(modName,modPath,param=DATA_JSONFILES)
-                        elif rutasDes == 2:
-                            if __PATHINTOJSON is not None:
-                                for clave, valor in __PATHINTOJSON.items():
-                                    clear()
-                                    print(f"\nNombre:{clave} = {valor}")
-                            else:
-                                print("No se pudo leer el valor del archivo json")
-                            delName = input(f"Ingresa el nombre de la ruta que desea eliminar\n{PROMPT_USER}")
-                            func_delPath(delName,pathParam=DATA_JSONFILES)
+                    __main_opt__9(__PATHINTOJSON=__PATHINTOJSON)
                 else:
                     clear()
                     print(MSG_ERROR_INVALID_INPUT)
