@@ -17,6 +17,21 @@ MSG_MAIN_MENU = ("\n"
     "9.- Rutas de proyectos\n"
     "0.- Cerrar"
 )
+MSG_RUTASDES = ("Que quieres hacer?\n"
+    "\n1.-Agregar una nueva ruta"
+    "\n2.-Eliminar una ruta"
+    "\n3.-Modificar una ruta"
+    "\n4.-Borrar todas las rutas"
+    "\n5.-Agregar una cantidad de rutas"
+    "\n6.-Ver las rutas"
+    "\n0.-Cerrar opciones"
+)
+MSG_PROYECTSPATHS = ("Que desea hacer?\n\n"
+    "1.-Actualizar todas las rutas preprogramadas a htdocs\n"
+    "2.-Actualizar una ruta preprogramada a htdocs\n"
+    "3.-Escribir una ruta y agregarla a htdocs\n"
+    "0.-Salir\n"
+)
 PROMPT_PATH_START = "Ingresa la ruta de la carpeta que deseas agregar..."
 PROMPT_PATH_END = "¿Quieres ingresarlo a Htdocs Xampp? [S/n]:: "
 PROMPT_DEST_PATH = "Ingresa la ruta de destino..."
@@ -27,15 +42,6 @@ MSG_PROGRAM_ENDED = "Programa finalizado"
 MSG_COPY_SUCCESS = "Se ha copiado correctamente"
 MSG_CONFIRM_UNINSTALL = "¿Está seguro de desinstalar? [s/N]:: "
 MSG_CONFIRM_SECURITY = "¿Está seguro de realizar cambios en la seguridad? [s/N]:: "
-MSG_RUTASDES = ("Que quieres hacer?\n"
-                "\n1.-Agregar una nueva ruta"
-                "\n2.-Eliminar una ruta"
-                "\n3.-Modificar una ruta"
-                "\n4.-Borrar todas las rutas"
-                "\n5.-Agregar una cantidad de rutas"
-                "\n6.-Ver las rutas"
-                "\n0.-Cerrar opciones"
-                )
 MSG_INRUN = "El programa ya fue iniciado"
 MSG_NORUN = "El programa no ha sido iniciado"
 MSG_ERROR_OPTION_PATH = "Ingresa una opcion valida en la opcion '9'"
@@ -49,6 +55,10 @@ XAMPP_SECURITY_PATH = "/opt/lampp/lampp security"
 XAMPP_INSTALLER_PATH = "~/Desktop/autXampp/xampp/./xampp-linux-x64-8.2.12-0-installer.run"
 XAMPP_HTDOCS_PATH = "/opt/lampp/htdocs"
 DATA_JSONFILES = "~/Desktop/autXampp/xampp/data/paths.json"
+
+def addValidOption():
+    clear()
+    print("agregue una opcion valida")
 
 def func_containsKW(param):
     caracteres_validos = (
@@ -156,6 +166,7 @@ def func_delPath(name,pathParam):
     
     except Exception as e:
         print(f"Ocurrió un error: {e}")
+
 def func_modPath(name, newPath, pathParam):
     pathParam = expanduser(pathParam)
     try:
@@ -199,22 +210,51 @@ def __main_opt__2():#? Finalizar servidor
         clear()
         print(MSG_NORUN)
         sleep(0.5)
-def __main_opt__3(D_pathEnd):#? Agregar proyecto
-    clear()
-    __optAP = input()
-    if func_containsKW(__optAP):
-        print()
-    elif func_containsNum(__optAP):
-        print()
-    __pathStart = func_get_valid_path(PROMPT_PATH_START)
-    
-    __pathEnd = input(PROMPT_PATH_END)
-    if __pathEnd.lower() == "n":
-        __pathEnd = func_get_valid_path(PROMPT_DEST_PATH)
-        func_cpToPath(__pathStart, __pathEnd)
+
+def __main_opt__3_1(D_pathEnd,__PATHINTOJSON):
+    err = False
+    if __PATHINTOJSON is not None:
+        for clave,valor in __PATHINTOJSON.items():
+            if isdir(expanduser(valor)):
+                print(f"Todo bien con {clave}")
+            else:
+                clear()
+                print(f"No existe la ruta {valor}")
+                err = True
+                break
+        if err == False: 
+            for clave, valor in __PATHINTOJSON.items():
+                system(f"sudo cp -r {expanduser(valor)} {expanduser(D_pathEnd)}")
+            print("Se han agregado todas las rutas correctamente")
     else:
-        func_cpToPath(__pathStart, D_pathEnd)
-        print(MSG_COPY_SUCCESS)
+        print("No se pudo leer el valor del archivo json")
+    return True
+
+def __main_opt__3_2():
+    """
+    TODO:Realizar una funcion la pida que el usuario decida cual directorio preprogramado ingresar al directorio htdocs, ademas de que se pueda decidir si se agregara a un directorio externo
+    """
+    print()
+    
+def __main_opt__3(D_pathEnd,__PATHINTOJSON):#? Agregar proyecto
+    clear()
+    __optAP = input(MSG_PROYECTSPATHS+PROMPT_USER)
+    if func_containsKW(__optAP) == False:
+        if func_containsNum(__optAP):
+            __optAP = int(__optAP)
+            if   __optAP == 1:
+                print("Seguro que desea actualizar todos los directorios a htdocs?")
+                __des = input(f"\n{PROMPT_USER}[s/N]:: ")
+                if __des.lower() in ("s","S","y","Y"):
+                    __main_opt__3_1(D_pathEnd,__PATHINTOJSON)
+                else:
+                    addValidOption()
+            
+        elif __optAP == 2:
+            print("")
+    else:
+        addValidOption()
+        
 
 def __main_opt__4():#? Iniciar sistema grafico
     clear()
@@ -227,14 +267,14 @@ def __main_opt__5():#? Instalar xampp
 
 def __main_opt__6():
     desinstalar = input(MSG_CONFIRM_UNINSTALL)
-    if desinstalar.lower() in ("s", "y"):
+    if desinstalar.lower() in ("s", "y","S","Y"):
         system(f"sudo {XAMPP_UNINSTALL_PATH}")
     else:
         clear()
 
 def __main_opt__8():
     seguro = input(MSG_CONFIRM_SECURITY)
-    if seguro.lower() in ("s", "y"):
+    if seguro.lower() in ("s", "y","S","Y"):
         system(f"sudo {XAMPP_SECURITY_PATH}")
     else:
         clear()
@@ -273,9 +313,9 @@ def __main_opt__9_3(__PATHINTOJSON):
     func_modPath(modName, modPath, pathParam=DATA_JSONFILES)
 
 def __main_opt__9_6(__PATHINTOJSON):
+    clear()
     if __PATHINTOJSON is not None:
         for clave, valor in __PATHINTOJSON.items():
-            clear()
             print(f"{clave}: {valor}")
     else:
         print("No se pudo leer el valor del archivo json")
@@ -333,7 +373,7 @@ def main():
                 elif __op == 2:#? Finalizar servidor
                     __main_opt__2()
                 elif __op == 3:#? Agregar proyecto
-                    __main_opt__3(D_pathEnd=D_pathEnd)
+                    __main_opt__3(D_pathEnd=D_pathEnd,__PATHINTOJSON=__PATHINTOJSON)
                 elif __op == 4:#? Iniciar sistema grafico
                     __main_opt__4()
                 elif __op == 5:#? Instalar xampp
